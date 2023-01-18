@@ -47,6 +47,6 @@ ARG PYTHON_VERSION=3.9.13
 RUN PYTHON_CONFIGURE_OPTS=--enable-shared pyenv install $PYTHON_VERSION && pyenv global $PYTHON_VERSION
 
 # Update pip
-RUN pip install -U pip
+RUN pip install -U pip wheel setuptools --no-cache-dir
 
 CMD /bin/bash
