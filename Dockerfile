@@ -18,10 +18,11 @@ RUN apt-get update -qq && apt-get install -qq -y git make build-essential libssl
 
 # Install NodeJS
 ARG NODE_VERSION=16
-RUN curl -sL https://deb.nodesource.com/setup_$NODE_VERSION.x -o nodesource_setup.sh
-RUN bash nodesource_setup.sh
-RUN rm nodesource_setup.sh
-RUN apt-get install nodejs
+RUN curl -sL https://deb.nodesource.com/setup_$NODE_VERSION.x -o nodesource_setup.sh && \
+    bash nodesource_setup.sh && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
 
 RUN npm install --global yarn
 
@@ -45,8 +46,7 @@ RUN eval "$(pyenv init --path)" && \
 ARG PYTHON_VERSION=3.9.13
 RUN PYTHON_CONFIGURE_OPTS=--enable-shared pyenv install $PYTHON_VERSION && pyenv global $PYTHON_VERSION
 
-# Setup Python deps
-RUN pip install -U pip wheel setuptools --no-cache-dir&& \
-    pip install opencv-python scipy==1.9.1 Cython --no-cache-dir
+# Update pip
+RUN pip install -U pip
 
 CMD /bin/bash
