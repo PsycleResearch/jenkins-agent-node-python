@@ -1,0 +1,52 @@
+FROM jenkins/agent
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+
+ARG NONROOT_USER=jenkins
+
+USER root
+
+# Install requirements
+RUN apt-get update -qq && apt-get install -qq -y git make build-essential libssl-dev zlib1g-dev \
+    libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
+    libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev libgeos-dev && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
+
+# Install NodeJS
+ARG NODE_VERSION=16
+RUN curl -sL https://deb.nodesource.com/setup_$NODE_VERSION.x -o nodesource_setup.sh
+RUN bash nodesource_setup.sh
+RUN rm nodesource_setup.sh
+RUN apt-get install nodejs
+
+RUN npm install --global yarn
+
+USER $NONROOT_USER
+
+ENV HOME=/home/$NONROOT_USER
+WORKDIR $HOME
+
+ENV PYENV_ROOT=$HOME/.pyenv
+
+# Install Pyenv
+RUN git clone https://github.com/pyenv/pyenv.git $PYENV_ROOT && \
+    cd $PYENV_ROOT && src/configure && make -C src
+
+# Setup Pyenv
+ENV PATH=$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
+RUN eval "$(pyenv init --path)" && \
+    eval "$(pyenv init -)"
+
+# Install Python
+ARG PYTHON_VERSION=3.9.13
+RUN PYTHON_CONFIGURE_OPTS=--enable-shared pyenv install $PYTHON_VERSION && pyenv global $PYTHON_VERSION
+
+# Setup Python deps
+RUN pip install -U pip wheel setuptools --no-cache-dir&& \
+    pip install opencv-python scipy==1.9.1 Cython --no-cache-dir
+
+CMD /bin/bash
