@@ -1,7 +1,22 @@
-# Psycle Repository Template
+# Jenkins Agent with Node and Python
 
-Use this repo as a template whenever you want to create a new repo for a client.
+This repo contains a Dockerfile for a Jenkins agent with Node 16 and Python 3.9.13.
 
-It contains:
-- a basic .gitignore
-- a pull request template
+You can get the image from ou [public ECR](https://gallery.ecr.aws/psycle/jenkins-agent-node-python)
+
+You can extend this image or override the Node and Python version by using the environnement variables and build arguments.
+
+| Build argument   | Default value |
+| ---------------- | ------------- |
+| `NONROOT_USER`   | `jenkins`     |
+| `NODE_VERSION`   | `16`          |
+| `PYTHON_VERSION` | `3.9.13`      |
+
+| Environment variable | Default value                             |
+| -------------------- | ----------------------------------------- |
+| `DEBIAN_FRONTEND`    | `noninteractive`                          |
+| `LC_ALL`             | `C.UTF-8`                                 |
+| `LANG`               | `C.UTF-8`                                 |
+| `HOME`               | `/home/$USER`                             |
+| `PYENV_ROOT`         | `$HOME/.pyenv`                            |
+| `PATH`               | `$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH` |
