@@ -59,7 +59,7 @@ RUN PYTHON_CONFIGURE_OPTS=--enable-shared pyenv install $PYTHON_VERSION && pyenv
 RUN pip install -U pip wheel setuptools pexpect --no-cache-dir
 
 # Install Poetry
-ARG POETRY_VERSION=1.3.2
+ARG POETRY_VERSION=1.5.1
 RUN curl -sSL https://install.python-poetry.org | python3 - --version $POETRY_VERSION
 
 CMD /bin/bash
