@@ -3,6 +3,7 @@ FROM docker:dind as dind
 FROM jenkins/agent
 
 COPY --from=docker:dind /usr/local/bin/docker /usr/local/bin/
+COPY --from=docker:dind /usr/local/libexec/docker/cli-plugins/docker-buildx /usr/local/libexec/docker/cli-plugins/docker-compose /usr/local/libexec/docker/cli-plugins/
 
 ENV DEBIAN_FRONTEND=noninteractive
 
