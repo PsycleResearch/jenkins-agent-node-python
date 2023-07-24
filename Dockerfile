@@ -16,7 +16,7 @@ USER root
 
 # Install requirements
 RUN apt-get update -qq && apt-get install -qq -y git make build-essential libssl-dev zlib1g-dev \
-    libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm unzip \
+    libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm unzip jq \
     libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev libgeos-dev && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
