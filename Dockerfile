@@ -26,17 +26,12 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
     unzip awscliv2.zip && \
     ./aws/install
 
-USER $NONROOT_USER
-
-ENV HOME=/home/$NONROOT_USER
-WORKDIR $HOME
-
 # Install NodeJS via NVM
-ENV ENV="$HOME/.profile"
-ENV NVM_DIR="$HOME/.nvm"
+ENV NVM_DIR="/opt/nvm"
 ARG NVM_VERSION=v0.39.5
 ARG NODE_VERSION=20.9.0
 
+RUN mkdir -p ${NVM_DIR}
 RUN curl --silent -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh | bash
 
 # install node and npm
@@ -48,6 +43,29 @@ RUN \. $NVM_DIR/nvm.sh \
 # add node and npm to path so the commands are available
 ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
 ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
+
+# confirm installation
+RUN node -v
+RUN npm -v
+
+RUN echo "source ${NVM_DIR}/nvm.sh" >> /root/.profile
+RUN chown -R ${NONROOT_USER} ${NVM_DIR}
+
+# Setup NVM non root
+USER $NONROOT_USER
+
+ENV HOME=/home/$NONROOT_USER
+WORKDIR $HOME
+
+ENV ENV="$HOME/.profile"
+RUN touch ${HOME}/.profile
+RUN echo "source ${NVM_DIR}/nvm.sh" >> ${HOME}/.profile
+
+# add node and npm to path so the commands are available
+ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
+ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
+
+RUN chown ${NONROOT_USER} ${HOME}/.profile
 
 # confirm installation
 RUN node -v
