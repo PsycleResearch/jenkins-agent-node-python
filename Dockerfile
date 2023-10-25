@@ -26,20 +26,32 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
     unzip awscliv2.zip && \
     ./aws/install
 
-# Install NodeJS
-ARG NODE_VERSION=16
-RUN curl -sL https://deb.nodesource.com/setup_$NODE_VERSION.x -o nodesource_setup.sh && \
-    bash nodesource_setup.sh && \
-    apt-get install -y nodejs && \
-    rm -rf /var/lib/apt/lists/* && \
-    apt-get clean
-
-RUN npm install --global yarn
-
 USER $NONROOT_USER
 
 ENV HOME=/home/$NONROOT_USER
 WORKDIR $HOME
+
+# Install NodeJS via NVM
+ENV ENV="$HOME/.profile"
+ENV NVM_DIR="$HOME/.nvm"
+ARG NVM_VERSION=v0.39.5
+ARG NODE_VERSION=20.9.0
+
+RUN curl --silent -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh | bash
+
+# install node and npm
+RUN \. $NVM_DIR/nvm.sh \
+    && nvm install $NODE_VERSION \
+    && nvm alias default $NODE_VERSION \
+    && nvm use default
+
+# add node and npm to path so the commands are available
+ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
+ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
+
+# confirm installation
+RUN node -v
+RUN npm -v
 
 ENV PYENV_ROOT=$HOME/.pyenv
 
