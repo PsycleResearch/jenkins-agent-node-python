@@ -36,12 +36,7 @@ RUN apt-get update && apt-get install nodejs -y && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
 
-RUN npm install --global yarn && \
-    npx playwright install --with-deps chromium && \
-    npm cache clean --force && \
-    yarn cache clean --all && \
-    rm -rf /var/lib/apt/lists/* && \
-    apt-get clean
+RUN npm install --global yarn
 
 USER $NONROOT_USER
 
