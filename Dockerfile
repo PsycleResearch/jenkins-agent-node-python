@@ -1,4 +1,4 @@
-FROM docker:dind as dind
+FROM docker:dind AS dind
 
 FROM jenkins/agent
 
@@ -30,39 +30,42 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
 # Install NodeJS
 ARG NODE_MAJOR=20
 
-RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
-RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
-RUN apt-get update && apt-get install nodejs -y && \
+RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
+    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list && \
+    apt-get update && apt-get install nodejs -y && \
     rm -rf /var/lib/apt/lists/* && \
-    apt-get clean
+    apt-get clean &&\
+    npm install --global yarn
 
-RUN npm install --global yarn
+# Install Golang
+ARG GOLANG_VER=1.23.2
+RUN curl -fsSL https://go.dev/dl/go${GOLANG_VER}.linux-amd64.tar.gz | tar -C /usr/local -xz
+ENV PATH=/usr/local/go/bin:${PATH}
 
 USER $NONROOT_USER
 
-ENV HOME=/home/$NONROOT_USER
-WORKDIR $HOME
+ENV HOME=/home/${NONROOT_USER}
+WORKDIR ${HOME}
 
-ENV PYENV_ROOT=$HOME/.pyenv
+ENV PYENV_ROOT=${HOME}/.pyenv
 
 # Install Pyenv
-RUN git clone https://github.com/pyenv/pyenv.git $PYENV_ROOT && \
-    cd $PYENV_ROOT && src/configure && make -C src
+RUN git clone https://github.com/pyenv/pyenv.git ${PYENV_ROOT} && \
+    cd ${PYENV_ROOT} && src/configure && make -C src
 
 # Setup Pyenv
-ENV PATH=$HOME/.local/bin:$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
+ENV PATH=${HOME}/.local/bin:$PYENV_ROOT/shims:${PYENV_ROOT}/bin:$PATH
 RUN eval "$(pyenv init --path)" && \
     eval "$(pyenv init -)"
 
 # Install Python
 ARG PYTHON_VERSION=3.9.13
-RUN PYTHON_CONFIGURE_OPTS=--enable-shared pyenv install $PYTHON_VERSION && pyenv global $PYTHON_VERSION
-
-# Update pip
-RUN pip install -U pip wheel setuptools pexpect --no-cache-dir
+RUN PYTHON_CONFIGURE_OPTS=--enable-shared pyenv install ${PYTHON_VERSION} && \
+    pyenv global ${PYTHON_VERSION} && \
+    pip install -U pip wheel setuptools pexpect --no-cache-dir
 
 # Install Poetry
-ARG POETRY_VERSION=1.8.3
-RUN curl -sSL https://install.python-poetry.org | python3 - --version $POETRY_VERSION
+ARG POETRY_VERSION=1.8.4
+RUN curl -sSL https://install.python-poetry.org | python3 - --version ${POETRY_VERSION}
 
-CMD /bin/bash
+CMD ["/bin/bash"]
