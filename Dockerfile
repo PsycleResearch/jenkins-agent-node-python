@@ -47,6 +47,9 @@ USER $NONROOT_USER
 ENV HOME=/home/${NONROOT_USER}
 WORKDIR ${HOME}
 
+RUN mkdir -p ${HOME}/go
+ENV PATH=${HOME}/go/bin:${PATH}
+
 ENV PYENV_ROOT=${HOME}/.pyenv
 
 # Install Pyenv
