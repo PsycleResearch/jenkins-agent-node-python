@@ -1,6 +1,6 @@
 # Jenkins Agent with Node and Python
 
-This repo contains a Dockerfile for a Jenkins agent with Node 16 and Python 3.9.13.
+This repo contains a Dockerfile for a Jenkins agent with Node 22 and Python 3.9.13.
 
 You can get the image from ou [public ECR](https://gallery.ecr.aws/psycle/jenkins-agent-node-python)
 
