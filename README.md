@@ -9,7 +9,7 @@ You can extend this image or override the Node and Python version by using the e
 | Build argument   | Default value |
 | ---------------- | ------------- |
 | `NONROOT_USER`   | `jenkins`     |
-| `NODE_VERSION`   | `16`          |
+| `NODE_VERSION`   | `22`          |
 | `PYTHON_VERSION` | `3.9.13`      |
 
 | Environment variable | Default value                             |
