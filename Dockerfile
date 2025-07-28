@@ -25,7 +25,8 @@ RUN apt-get update -qq && apt-get install -qq -y git make build-essential libssl
 # Install AWS CLI
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
     unzip awscliv2.zip && \
-    ./aws/install
+    ./aws/install && \
+    rm -rf aws awscliv2.zip
 
 # Install NodeJS
 ARG NODE_MAJOR=22
@@ -62,13 +63,19 @@ RUN eval "$(pyenv init --path)" && \
     eval "$(pyenv init -)"
 
 # Install Python
-ARG PYTHON_VERSION=3.9.13
+ARG PYTHON_VERSION=3.12
 RUN PYTHON_CONFIGURE_OPTS=--enable-shared pyenv install ${PYTHON_VERSION} && \
     pyenv global ${PYTHON_VERSION} && \
     pip install -U pip wheel setuptools pexpect --no-cache-dir
 
+# temporary also install Python 3.9 for backward compatibility
+RUN PYTHON_CONFIGURE_OPTS=--enable-shared pyenv install 3.9 && \
+    cd /tmp && \
+    pyenv local 3.9 && \
+    pip install -U pip wheel setuptools pexpect --no-cache-dir
+
 # Install Poetry
-ARG POETRY_VERSION=1.8.4
+ARG POETRY_VERSION=2.1.3
 RUN curl -sSL https://install.python-poetry.org | python3 - --version ${POETRY_VERSION}
 
 CMD ["/bin/bash"]
