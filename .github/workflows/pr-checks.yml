@@ -1,0 +1,79 @@
+name: PR checks
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    types: [opened, ready_for_review, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
+jobs:
+  queue:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false || github.ref == 'refs/heads/master'
+    timeout-minutes: 1
+
+    outputs:
+      should_skip: ${{ steps.skip.outputs.should_skip }}
+      paths_result: ${{ steps.skip.outputs.paths_result }}
+
+    steps:
+      - id: skip
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          concurrent_skipping: "same_content_newer"
+          cancel_others: true
+          skip_after_successful_duplicate: true
+          do_not_skip: '["workflow_dispatch", "schedule"]'
+          paths: '["Dockerfile", ".dockerignore", "Makefile", ".github/workflows/pr-checks.yml"]'
+          paths_filter: |
+            image:
+              paths:
+                - "Dockerfile"
+                - ".dockerignore"
+                - "Makefile"
+            ci:
+              paths:
+                - ".github/workflows/pr-checks.yml"
+
+  build-image:
+    runs-on: ubuntu-latest
+    needs: queue
+    if: github.ref == 'refs/heads/master' || ( needs.queue.outputs.should_skip != 'true' && ( !fromJSON(needs.queue.outputs.paths_result).image.should_skip || !fromJSON(needs.queue.outputs.paths_result).ci.should_skip ) )
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        run: make image
+
+  status:
+    runs-on: ubuntu-latest
+    needs: [queue, build-image]
+    if: ${{ always() && !cancelled() }}
+    timeout-minutes: 1
+
+    steps:
+      - name: Check status
+        env:
+          QUEUE_OK: ${{ needs.queue.result == 'success' }}
+          IMAGE_OK: ${{ needs.build-image.result == 'success' || needs.build-image.result == 'skipped' }}
+        run: |
+          echo "Queue: $QUEUE_OK"
+          echo "Frontend: $IMAGE_OK"
+          if [[ $QUEUE_OK == "true" && $IMAGE_OK == "true" ]]; then
+            echo "All good"
+            exit 0
+          else
+            echo "Something went wrong"
+            exit 1
+          fi
