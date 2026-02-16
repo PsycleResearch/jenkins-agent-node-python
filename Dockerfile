@@ -39,11 +39,6 @@ RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg -
     npm install --global corepack &&\
     corepack enable
 
-# Install Golang
-ARG GOLANG_VER=1.23.2
-RUN curl -fsSL https://go.dev/dl/go${GOLANG_VER}.linux-amd64.tar.gz | tar -C /usr/local -xz
-ENV PATH=/usr/local/go/bin:${PATH}
-
 USER $NONROOT_USER
 
 ENV HOME=/home/${NONROOT_USER}
@@ -76,7 +71,7 @@ RUN PYTHON_CONFIGURE_OPTS=--enable-shared pyenv install 3.9 && \
     pip install -U pip wheel setuptools pexpect --no-cache-dir
 
 # Install Poetry
-ARG POETRY_VERSION=2.1.3
+ARG POETRY_VERSION=2.3.2
 RUN curl -sSL https://install.python-poetry.org | python3 - --version ${POETRY_VERSION}
 
 CMD ["/bin/bash"]
