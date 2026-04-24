@@ -23,6 +23,7 @@ RUN apt-get update -qq && apt-get install -qq -y git make build-essential libssl
     apt-get clean
 
 # Install AWS CLI
+# TODO check if it is still required
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
     unzip awscliv2.zip && \
     ./aws/install && \
@@ -71,7 +72,7 @@ RUN PYTHON_CONFIGURE_OPTS=--enable-shared pyenv install 3.9 && \
     pip install -U pip wheel setuptools pexpect --no-cache-dir
 
 # Install Poetry
-ARG POETRY_VERSION=2.3.2
+ARG POETRY_VERSION=2.3.4
 RUN curl -sSL https://install.python-poetry.org | python3 - --version ${POETRY_VERSION}
 
 CMD ["/bin/bash"]
